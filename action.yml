@@ -15,6 +15,6 @@ runs:
       Start-BitsTransfer "https://github.com/winfsp/winfsp/releases/download/v2.0/winfsp-2.0.23075.msi" "$($env:TEMP)\winfsp.msi"
       Start-BitsTransfer "https://github.com/Ceiridge/WinFsp-MemFs-Extended/releases/download/v3.1/Release.zip" "$($env:TEMP)\MemFs-Extended.zip"
       Start-Process -Wait 'msiexec' -ArgumentList '/i',"$($env:TEMP)\winfsp.msi",'/qn','/norestart','ADDLOCAL=F.Developer'
-      Expand-Archive -Path "$($env:TEMP)\MemFs-Extended.zip" -DestinationPath "$($env:ProgramFiles(x86))\WinFsp"
-      Start-Process -Wait "$($env:ProgramFiles(x86))\WinFsp\bin\memefs-x64" -ArgumentList '-i','-F','NTFS','-u','','-m','R:'
+      Expand-Archive -Path "$($env:TEMP)\MemFs-Extended.zip" -DestinationPath "${$env:ProgramFiles(x86)}\WinFsp"
+      Start-Process -Wait "${$env:ProgramFiles(x86)}\WinFsp\bin\memefs-x64" -ArgumentList '-i','-F','NTFS','-u','','-m','R:'
       Remove-Item "$($env:TEMP)\winfsp.msi"
