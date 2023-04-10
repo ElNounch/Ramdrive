@@ -9,27 +9,27 @@ inputs:
 runs:
   using: "composite"
   steps:
-  - id: "Mounting 1/6"
+  - id: "Mounting 1-6"
     shell: powershell
     run: |
       Start-BitsTransfer "https://github.com/winfsp/winfsp/releases/download/v2.0/winfsp-2.0.23075.msi" "${env:TEMP}\winfsp.msi"
-  - id: "Mounting 2/6"
+  - id: "Mounting 2-6"
     shell: powershell
     run: |
       Start-BitsTransfer "https://github.com/Ceiridge/WinFsp-MemFs-Extended/releases/download/v3.1/Release.zip" "${env:TEMP}\MemFs-Extended.zip"
-  - id: "Mounting 3/6"
+  - id: "Mounting 3-6"
     shell: powershell
     run: |
       Start-Process -Wait 'msiexec' -ArgumentList '/i',"$($env:TEMP)\winfsp.msi",'/qn','/norestart','ADDLOCAL=F.Developer'
-  - id: "Mounting 4/6"
+  - id: "Mounting 4-6"
     shell: powershell
     run: |
       Expand-Archive -Path "${env:TEMP}\MemFs-Extended.zip" -DestinationPath "${env:ProgramFiles(x86)}\WinFsp"
-  - id: "Mounting 5/6"
+  - id: "Mounting 5-6"
     shell: powershell
     run: |
       Start-Process -Wait "${env:ProgramFiles(x86)}\WinFsp\memefs-x64.exe" -ArgumentList '-i','-F','NTFS','-m',${{ inputs.drive }}
-  - id: "Mounting 6/6"
+  - id: "Mounting 6-6"
     shell: powershell
     run: |
       Remove-Item "${env:TEMP}\winfsp.msi"
