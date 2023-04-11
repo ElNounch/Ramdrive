@@ -21,7 +21,7 @@ runs:
       Start-Service msiscsi
       Start-Service wintarget
       $ISCSIIP = (Get-NetIPAddress -AddressFamily IPv4 -AddressState Preferred)[0].IPAddress
-      New-iscsivirtualdisk -path "ramdisk:RAMDISK1.vhdx" -Size ${{ inputs.size }} | Out-Null
+      New-iscsivirtualdisk -path "ramdisk:RAMDISK1.vhdx" -Size "${{ inputs.size }}" | Out-Null
       New-IscsiServerTarget TargetRamdisk -InitiatorId IPAddress:$ISCSIIP | Out-Null
       Add-IscsiVirtualDiskTargetMapping -TargetName TargetRamdisk -Path ramdisk:RAMDISK1.vhdx -Lun 1 | Out-Null
       New-IscsiTargetPortal -TargetPortalAddress $ISCSIIP | Out-Null
