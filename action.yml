@@ -24,7 +24,7 @@ runs:
   - id: "Mounting_4-6"
     shell: powershell
     run: |
-      Start-Process -Wait 'msiexec' -ArgumentList "$($env:TEMP)\Memefs-Installer.exe",'/S'
+      Start-Process -Wait "$($env:TEMP)\Memefs-Installer.exe" -ArgumentList '/S'
   - id: "Mounting_5-6"
     shell: powershell
     run: |
