@@ -2,34 +2,31 @@ name: 'RamDrive'
 description: 'Virtual disk in RAM only, auto-adjusting its size to content.'
 inputs:
   drive:
-    description: 'Additionnal drive'
+    description: 'New drive letter'
     required: true
     default: 'R:'
+    type: string
+  size:
+    description: 'Drive maximal size'
+    required: true
+    default: '1GB'
     type: string
 runs:
   using: "composite"
   steps:
-  - id: "Mounting_1-6"
-    shell: powershell
+  - shell: powershell
     run: |
-      Start-BitsTransfer "https://github.com/winfsp/winfsp/releases/download/v2.0/winfsp-2.0.23075.msi" "${env:TEMP}\winfsp.msi"
-  - id: "Mounting_2-6"
-    shell: powershell
-    run: |
-      Start-BitsTransfer "https://github.com/Ceiridge/WinFsp-MemFs-Extended/releases/download/v3.1/Memefs-Installer.exe" "${env:TEMP}\Memefs-Installer.exe"
-  - id: "Mounting_3-6"
-    shell: powershell
-    run: |
-      Start-Process -Wait 'msiexec' -ArgumentList '/i',"$($env:TEMP)\winfsp.msi",'/qn','/norestart','ADDLOCAL=F.Developer'
-  - id: "Mounting_4-6"
-    shell: powershell
-    run: |
-      Start-Process -Wait "$($env:TEMP)\Memefs-Installer.exe" -ArgumentList '/S'
-  - id: "Mounting_5-6"
-    shell: powershell
-    run: |
-      Start-Process -Wait "${env:ProgramFiles(x86)}\WinFsp\bin\launchctl-x64.exe" -ArgumentList 'start','memefs64','ramdisk','""','\\.\${{ inputs.drive }}'
-  - id: "Mounting_6-6"
-    shell: powershell
-    run: |
-      Remove-Item "${env:TEMP}\winfsp.msi"
+      Install-WindowsFeature File-Services -IncludeAllSubFeature -IncludeManagementTools | Out-Null
+      Install-WindowsFeature FS-iSCSITarget-Server -IncludeAllSubFeature -IncludeManagementTools | Out-Null
+      Start-Service msiscsi
+      Start-Service wintarget
+      $ISCSIIP = (Get-NetIPAddress -AddressFamily IPv4 -AddressState Preferred)[0].IPAddress
+      New-iscsivirtualdisk -path "ramdisk:RAMDISK1.vhdx" -Size "${{ inputs.size }}"
+      New-IscsiServerTarget TargetRamdisk -InitiatorId IPAddress:$ISCSIIP
+      Add-IscsiVirtualDiskTargetMapping -TargetName TargetRamdisk -Path ramdisk:RAMDISK1.vhdx -Lun 1
+      New-IscsiTargetPortal -TargetPortalAddress $ISCSIIP
+      Get-IscsiTarget | Connect-IscsiTarget
+      $ramD = Get-IscsiConnection | Get-Disk
+      Set-Disk $ramD -IsOffline $False
+      Initialize-Disk $ramD -PartitionStyle MBR
+      New-Partition $ramD -UseMaximumSize -DriveLetter "${{ inputs.drive }}"[0]
