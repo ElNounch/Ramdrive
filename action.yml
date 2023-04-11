@@ -4,7 +4,7 @@ inputs:
   drive:
     description: 'New drive letter'
     required: true
-    default: 'R:'
+    default: 'R'
     type: string
   size:
     description: 'Drive maximal size'
@@ -16,8 +16,8 @@ runs:
   steps:
   - shell: powershell
     run: |
-      Install-WindowsFeature File-Services -IncludeAllSubFeature -IncludeManagementTools | Out-Null
-      Install-WindowsFeature FS-iSCSITarget-Server -IncludeAllSubFeature -IncludeManagementTools | Out-Null
+      Install-WindowsFeature File-Services | Out-Null
+      Install-WindowsFeature FS-iSCSITarget-Server | Out-Null
       Start-Service msiscsi
       Start-Service wintarget
       $ISCSIIP = (Get-NetIPAddress -AddressFamily IPv4 -AddressState Preferred)[0].IPAddress
