@@ -9,7 +9,7 @@ inputs:
   size:
     description: "Drive maximal size"
     required: true
-    default: '1GB'
+    default: 1GB
     type: string
 runs:
   using: "composite"
