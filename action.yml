@@ -1,13 +1,13 @@
 name: 'RamDrive'
-description: 'Virtual disk in RAM only, auto-adjusting its size to content.'
+description: "Virtual disk in RAM only"
 inputs:
   drive:
-    description: 'New drive letter'
+    description: "New drive letter"
     required: true
     default: 'R'
     type: string
   size:
-    description: 'Drive maximal size'
+    description: "Drive maximal size"
     required: true
     default: '1GB'
     type: string
@@ -16,16 +16,16 @@ runs:
   steps:
   - shell: powershell
     run: |
+      $ISCSIIP = (Get-NetIPAddress -AddressFamily IPv4 -AddressState Preferred)[0].IPAddress
       Install-WindowsFeature File-Services | Out-Null
       Install-WindowsFeature FS-iSCSITarget-Server | Out-Null
       Start-Service msiscsi
       Start-Service wintarget
-      $ISCSIIP = (Get-NetIPAddress -AddressFamily IPv4 -AddressState Preferred)[0].IPAddress
       New-iscsivirtualdisk -path "ramdisk:RAMDISK1.vhdx" -Size "${{ inputs.size }}" | Out-Null
       New-IscsiServerTarget TargetRamdisk -InitiatorId IPAddress:$ISCSIIP | Out-Null
       Add-IscsiVirtualDiskTargetMapping -TargetName TargetRamdisk -Path ramdisk:RAMDISK1.vhdx -Lun 1 | Out-Null
       New-IscsiTargetPortal -TargetPortalAddress $ISCSIIP | Out-Null
-      Get-IscsiTarget | Connect-IscsiTarget
+      Get-IscsiTarget | Connect-IscsiTarget | Out-Null
       $ramD = Get-IscsiConnection
       $ramD | FL
       $ramD = ($ramD | Get-Disk)
