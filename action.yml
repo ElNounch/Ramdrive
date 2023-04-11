@@ -21,7 +21,7 @@ runs:
       Install-WindowsFeature FS-iSCSITarget-Server | Out-Null
       Start-Service msiscsi
       Start-Service wintarget
-      New-iscsivirtualdisk -path "ramdisk:RAMDISK1.vhdx" -Size (${{ inputs.size }} / [UInt64]1) | Out-Null
+      New-iscsivirtualdisk -path "ramdisk:RAMDISK1.vhdx" -Size $('${{ inputs.size }}' / [UInt64]1) | Out-Null
       New-IscsiServerTarget TargetRamdisk -InitiatorId IPAddress:$ISCSIIP | Out-Null
       Add-IscsiVirtualDiskTargetMapping -TargetName TargetRamdisk -Path ramdisk:RAMDISK1.vhdx -Lun 1 | Out-Null
       New-IscsiTargetPortal -TargetPortalAddress $ISCSIIP | Out-Null
