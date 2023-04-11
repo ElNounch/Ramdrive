@@ -21,12 +21,14 @@ runs:
       Start-Service msiscsi
       Start-Service wintarget
       $ISCSIIP = (Get-NetIPAddress -AddressFamily IPv4 -AddressState Preferred)[0].IPAddress
-      New-iscsivirtualdisk -path "ramdisk:RAMDISK1.vhdx" -Size ${{ inputs.size }}
-      New-IscsiServerTarget TargetRamdisk -InitiatorId IPAddress:$ISCSIIP
-      Add-IscsiVirtualDiskTargetMapping -TargetName TargetRamdisk -Path ramdisk:RAMDISK1.vhdx -Lun 1
-      New-IscsiTargetPortal -TargetPortalAddress $ISCSIIP
+      New-iscsivirtualdisk -path "ramdisk:RAMDISK1.vhdx" -Size ${{ inputs.size }} | Out-Null
+      New-IscsiServerTarget TargetRamdisk -InitiatorId IPAddress:$ISCSIIP | Out-Null
+      Add-IscsiVirtualDiskTargetMapping -TargetName TargetRamdisk -Path ramdisk:RAMDISK1.vhdx -Lun 1 | Out-Null
+      New-IscsiTargetPortal -TargetPortalAddress $ISCSIIP | Out-Null
       Get-IscsiTarget | Connect-IscsiTarget
-      $ramD = Get-IscsiConnection | Get-Disk
+      $ramD = Get-IscsiConnection
+      $ramD | FL
+      $ramD = ($ramD | Get-Disk)
       Set-Disk $ramD -IsOffline $False
       Initialize-Disk $ramD -PartitionStyle MBR
       New-Partition $ramD -UseMaximumSize -DriveLetter "${{ inputs.drive }}"[0]
