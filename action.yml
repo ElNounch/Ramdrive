@@ -1,4 +1,4 @@
-name: 'RamDrive'
+name: "RamDrive"
 description: "Virtual disk in RAM only"
 inputs:
   drive:
@@ -14,14 +14,14 @@ inputs:
 runs:
   using: "composite"
   steps:
-  - name: 'OS software setup'
+  - name: OS software setup
     shell: powershell
     run: |
       Install-WindowsFeature File-Services | Out-Null
       Install-WindowsFeature FS-iSCSITarget-Server | Out-Null
       Start-Service msiscsi
       Start-Service wintarget
-  - name: 'iSCSI configuration'
+  - name: iSCSI configuration
     shell: powershell
     run: |
       $ISCSIIP = (Get-NetIPAddress -AddressFamily IPv4 -AddressState Preferred)[0].IPAddress
@@ -29,7 +29,7 @@ runs:
       New-IscsiServerTarget -ComputerName localhost -TargetName TargetRamdisk -InitiatorId @("IPAddress:$ISCSIIP") | Out-Null
       Add-IscsiVirtualDiskTargetMapping -ComputerName localhost -TargetName TargetRamdisk -Path ramdisk:RAMDISK1.vhdx -Lun 1 | Out-Null
       New-IscsiTargetPortal -TargetPortalAddress $ISCSIIP | Out-Null
-  - name: 'New disk setup'
+  - name: New disk setup
     shell: powershell
     run: |
       Get-IscsiTarget | Connect-IscsiTarget | Out-Null
@@ -37,3 +37,5 @@ runs:
       Set-Disk -InputObject $ramD -IsOffline $False
       Initialize-Disk -InputObject $ramD -PartitionStyle MBR
       New-Partition -InputObject $ramD -UseMaximumSize -DriveLetter "${{ inputs.drive }}"[0]
+      Get-PhysicalDisk
+      Get-VirtualDisk
