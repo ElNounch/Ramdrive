@@ -36,6 +36,4 @@ runs:
       $ramD = Get-IscsiConnection | Get-Disk
       Set-Disk -InputObject $ramD -IsOffline $False
       Initialize-Disk -InputObject $ramD -PartitionStyle MBR
-      New-Partition -InputObject $ramD -UseMaximumSize -DriveLetter "${{ inputs.drive }}"[0]
-      Get-PhysicalDisk
-      Get-VirtualDisk
+      New-Partition -InputObject $ramD -UseMaximumSize -DriveLetter "${{ inputs.drive }}"[0] | Format-Volume
