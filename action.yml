@@ -14,17 +14,24 @@ inputs:
 runs:
   using: "composite"
   steps:
-  - shell: powershell
+  - name: 'OS software setup'
+    shell: powershell
     run: |
-      $ISCSIIP = (Get-NetIPAddress -AddressFamily IPv4 -AddressState Preferred)[0].IPAddress
       Install-WindowsFeature File-Services | Out-Null
       Install-WindowsFeature FS-iSCSITarget-Server | Out-Null
       Start-Service msiscsi
       Start-Service wintarget
+  - name: 'iSCSI configuration'
+    shell: powershell
+    run: |
+      $ISCSIIP = (Get-NetIPAddress -AddressFamily IPv4 -AddressState Preferred)[0].IPAddress
       New-iscsivirtualdisk -ComputerName localhost -path "ramdisk:RAMDISK1.vhdx" -Size $('${{ inputs.size }}' / ([UInt64]1)) | Out-Null
       New-IscsiServerTarget -ComputerName localhost -TargetName TargetRamdisk -InitiatorId @("IPAddress:$ISCSIIP") | Out-Null
-      Add-IscsiVirtualDiskTargetMapping -TargetName TargetRamdisk -Path ramdisk:RAMDISK1.vhdx -Lun 1 | Out-Null
-      New-IscsiTargetPortal -TargetPortalAddress $ISCSIIP | Out-Null
+      Add-IscsiVirtualDiskTargetMapping -ComputerName localhost -TargetName TargetRamdisk -Path ramdisk:RAMDISK1.vhdx -Lun 1 | Out-Null
+      New-IscsiTargetPortal -ComputerName localhost -TargetPortalAddress $ISCSIIP | Out-Null
+  - name: 'New disk setup'
+    shell: powershell
+    run: |
       Get-IscsiTarget | Connect-IscsiTarget | Out-Null
       $ramD = Get-IscsiConnection | Get-Disk
       Set-Disk -InputObject $ramD -IsOffline $False
